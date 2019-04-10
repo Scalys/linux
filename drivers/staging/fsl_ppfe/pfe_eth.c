@@ -1227,10 +1227,7 @@ static void ls1012a_configure_serdes(struct net_device *ndev)
 				   SGMII_SPEED_1GBPS
 				   | SGMII_USE_SGMII_AN
 				   | SGMII_EN);
-		pfe_eth_mdio_write(bus, 0, MDIO_SGMII_DEV_ABIL_SGMII,
-				   SGMII_DEV_ABIL_EEE_CLK_STP_EN
-				   | 0xa0
-				   | SGMII_DEV_ABIL_SGMII);
+		pfe_eth_mdio_write(bus, 0, MDIO_SGMII_DEV_ABIL_SGMII, 0x4001);
 		pfe_eth_mdio_write(bus, 0, MDIO_SGMII_LINK_TMR_L, 0x400);
 		pfe_eth_mdio_write(bus, 0, MDIO_SGMII_LINK_TMR_H, 0x0);
 		value = SGMII_CR_AN_EN | SGMII_CR_FD | SGMII_CR_SPEED_SEL1_1G;

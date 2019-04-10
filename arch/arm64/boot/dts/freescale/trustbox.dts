@@ -25,6 +25,8 @@
 
 	aliases {
 		serial0 = &duart0;
+		ethernet0 = &pfe_mac0;
+		ethernet1 = &pfe_mac1;
 	};
 };
 
@@ -62,7 +64,7 @@
 
 &gpio0 {
 		ngpios = <32>;
-		gpio-line-names =   "RPI_GPIO1_00", /* UART_TXD */
+		gpio-line-names =   			"RPI_GPIO1_00", /* UART_TXD */
 							"RPI_GPIO1_01", /* UART_RXD */
 							"RPI_GPIO1_02", /* I2C_SCL */
 							"RPI_GPIO1_03", /* I2C_SDA */
@@ -98,7 +100,7 @@
 
 &gpio1 {
 		ngpios = <18>;
-		gpio-line-names =   "M2_GPIO2_00", 
+		gpio-line-names =   			"M2_GPIO2_00",
 							"M2_GPIO2_01", 
 							"M2_GPIO2_02",  
 							"QPSI_A_MUX_SEL", 
@@ -131,7 +133,7 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-	ethernet@0 {
+	pfe_mac0: ethernet@0 {
 		compatible = "fsl,pfe-gemac-port";
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -139,6 +141,7 @@
 		fsl,gemac-bus-id = <0x0>;	/* BUS_ID */
 		fsl,gemac-phy-id = <0x1>;	/* PHY_ID */
 		fsl,mdio-mux-val = <0x0>;
+
 		phy-mode = "sgmii";
 		fsl,pfe-phy-if-flags = <0x0>;
 
@@ -147,7 +150,7 @@
 		};
 	};
 
-	ethernet@1 {
+	pfe_mac1: ethernet@1 {
 		compatible = "fsl,pfe-gemac-port";
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -155,6 +158,7 @@
 		fsl,gemac-bus-id = <0x1>;	/* BUS_ID */
 		fsl,gemac-phy-id = <0x2>;	/* PHY_ID */
 		fsl,mdio-mux-val = <0x0>;
+
 		phy-mode = "sgmii";
 		fsl,pfe-phy-if-flags = <0x0>;
 
@@ -162,4 +166,5 @@
 			reg = <0x0>; /* enabled/disabled */
 		};
 	};
+
 };
