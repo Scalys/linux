@@ -24,6 +24,8 @@
 	compatible = "fsl,ls1012a";
 
 	aliases {
+		ethernet0 = &pfe_mac0;
+		ethernet1 = &pfe_mac1;
 		serial0 = &duart0;
 	};
 };
@@ -131,7 +133,7 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-	ethernet@0 {
+	pfe_mac0: ethernet@0 {
 		compatible = "fsl,pfe-gemac-port";
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -147,7 +149,7 @@
 		};
 	};
 
-	ethernet@1 {
+	pfe_mac1: ethernet@1 {
 		compatible = "fsl,pfe-gemac-port";
 		#address-cells = <1>;
 		#size-cells = <0>;
