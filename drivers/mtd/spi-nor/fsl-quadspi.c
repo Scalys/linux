@@ -1323,6 +1323,30 @@ static int fsl_qspi_resume(struct platform_device *pdev)
 	return 0;
 }
 
+static void fsl_qspi_shutdown(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+	struct device_node *np = pdev->dev.of_node;
+	struct fsl_qspi *q;
+	struct spi_nor *nor;
+	int i = 0;
+
+	q = platform_get_drvdata(pdev);
+	for_each_available_child_of_node(dev->of_node, np) {
+		if (!q->has_second_chip)
+			i *= 2;
+
+		nor = &q->nor[i];
+
+		/* Disable 4-byte address mode, as it may prevent QSPI boot after soft
+         * reboot.
+         */
+		nor->write_reg(nor, SPINOR_OP_EX4B, NULL, 0);
+
+		i++;
+	}
+}
+
 static struct platform_driver fsl_qspi_driver = {
 	.driver = {
 		.name	= "fsl-quadspi",
@@ -1332,6 +1356,7 @@ static struct platform_driver fsl_qspi_driver = {
 	.remove		= fsl_qspi_remove,
 	.suspend	= fsl_qspi_suspend,
 	.resume		= fsl_qspi_resume,
+	.shutdown	= fsl_qspi_shutdown,
 };
 module_platform_driver(fsl_qspi_driver);
 
