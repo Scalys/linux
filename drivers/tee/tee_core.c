@@ -200,6 +200,42 @@ tee_ioctl_shm_register(struct tee_context *ctx,
 	return ret;
 }
 
+static int tee_ioctl_shm_register_fd(struct tee_context *ctx,
+			struct tee_ioctl_shm_register_fd_data __user *udata)
+{
+	struct tee_ioctl_shm_register_fd_data data;
+	struct tee_shm *shm;
+	long ret;
+
+	if (copy_from_user(&data, udata, sizeof(data)))
+		return -EFAULT;
+
+	/* Currently no input flags are supported */
+	if (data.flags)
+		return -EINVAL;
+
+	shm = tee_shm_register_fd(ctx, data.fd);
+	if (IS_ERR_OR_NULL(shm))
+		return -EINVAL;
+
+	data.id = shm->id;
+	data.flags = shm->flags;
+	data.size = shm->size;
+
+	if (copy_to_user(udata, &data, sizeof(data)))
+		ret = -EFAULT;
+	else
+		ret = tee_shm_get_fd(shm);
+
+	/*
+	 * When user space closes the file descriptor the shared memory
+	 * should be freed or if tee_shm_get_fd() failed then it will
+	 * be freed immediately.
+	 */
+	tee_shm_put(shm);
+	return ret;
+}
+
 static int params_from_user(struct tee_context *ctx, struct tee_param *params,
 			    size_t num_params,
 			    struct tee_ioctl_param __user *uparams)
@@ -641,6 +677,105 @@ out:
 	return rc;
 }
 
+int tee_ioctl_grpc_recv(struct tee_context *ctx,
+			struct tee_ioctl_buf_data __user *ubuf)
+{
+	int rc;
+	struct tee_ioctl_buf_data buf;
+	struct tee_ioctl_grpc_recv_arg __user *uarg;
+	struct tee_param *params;
+	u32 session;
+	u32 func;
+	u32 num_params;
+
+	if (!ctx->teedev->desc->ops->grpc_recv)
+		return -EINVAL;
+
+	if (copy_from_user(&buf, ubuf, sizeof(buf)))
+		return -EFAULT;
+	
+	if (buf.buf_len > TEE_MAX_ARG_SIZE ||
+		buf.buf_len < sizeof(struct tee_ioctl_grpc_recv_arg))
+		return -EINVAL;
+	
+	uarg = u64_to_user_ptr(buf.buf_ptr);
+	if (get_user(num_params, &uarg->num_params) ||
+		get_user(session, &uarg->session))
+		return -EFAULT;
+	
+	if (sizeof(*uarg) + TEE_IOCTL_PARAM_SIZE(num_params) != buf.buf_len)
+		return -EINVAL;
+	
+	params = kcalloc(num_params, sizeof(struct tee_param), GFP_KERNEL);
+	if (!params)
+		return -ENOMEM;
+	
+	rc = params_from_user(ctx, params, num_params, uarg->params);
+	if (rc)
+		goto out;
+
+	rc = ctx->teedev->desc->ops->grpc_recv(ctx, session, &func, &num_params, params);
+	if (rc)
+		goto out;
+	
+	if (put_user(func, &uarg->func) ||
+	    put_user(num_params, &uarg->num_params)) {
+		rc = -EFAULT;
+		goto out;
+	}
+
+	rc = params_to_supp(ctx, uarg->params, num_params, params);
+out:
+	kfree(params);
+	return rc;
+}
+
+int tee_ioctl_grpc_send(struct tee_context *ctx,
+			       struct tee_ioctl_buf_data __user *ubuf)
+{
+	int rc;
+	struct tee_ioctl_buf_data buf;
+	struct tee_ioctl_grpc_send_arg __user *uarg;
+	struct tee_ioctl_param __user *uparams = NULL;
+	struct tee_param *params = NULL;
+	u32 session;
+	u32 ret;
+	u32 num_params;
+	
+	if (!ctx->teedev->desc->ops->grpc_recv)
+		return -EINVAL;
+
+	if (copy_from_user(&buf, ubuf, sizeof(buf)))
+		return -EFAULT;
+	
+	if (buf.buf_len > TEE_MAX_ARG_SIZE ||
+		buf.buf_len < sizeof(struct tee_ioctl_grpc_send_arg))
+		return -EINVAL;
+	
+	uarg = u64_to_user_ptr(buf.buf_ptr);
+	if (get_user(session, &uarg->session) ||
+	    get_user(ret, &uarg->ret) ||
+	    get_user(num_params, &uarg->num_params))
+		return -EFAULT;	
+	
+	if (sizeof(*uarg) + TEE_IOCTL_PARAM_SIZE(num_params) != buf.buf_len)
+		return -EINVAL;
+	
+	params = kcalloc(num_params, sizeof(struct tee_param), GFP_KERNEL);
+	if (!params)
+		return -ENOMEM;
+
+	uparams = uarg->params;
+	rc = params_from_supp(params, num_params, uarg->params);
+	if (rc)
+		goto out;
+
+	rc = ctx->teedev->desc->ops->grpc_send(ctx, session, ret, num_params, params);
+out:
+	kfree(params);
+	return rc;
+}
+
 static long tee_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	struct tee_context *ctx = filp->private_data;
@@ -653,6 +788,8 @@ static long tee_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		return tee_ioctl_shm_alloc(ctx, uarg);
 	case TEE_IOC_SHM_REGISTER:
 		return tee_ioctl_shm_register(ctx, uarg);
+	case TEE_IOC_SHM_REGISTER_FD:
+		return tee_ioctl_shm_register_fd(ctx, uarg);
 	case TEE_IOC_OPEN_SESSION:
 		return tee_ioctl_open_session(ctx, uarg);
 	case TEE_IOC_INVOKE:
@@ -665,6 +802,10 @@ static long tee_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		return tee_ioctl_supp_recv(ctx, uarg);
 	case TEE_IOC_SUPPL_SEND:
 		return tee_ioctl_supp_send(ctx, uarg);
+	case TEE_IOC_GRPC_RECV:
+		return tee_ioctl_grpc_recv(ctx, uarg);
+	case TEE_IOC_GRPC_SEND:
+		return tee_ioctl_grpc_send(ctx, uarg);
 	default:
 		return -EINVAL;
 	}
@@ -977,6 +1118,7 @@ tee_client_open_context(struct tee_context *start,
 	} while (IS_ERR(ctx) && PTR_ERR(ctx) != -ENOMEM);
 
 	put_device(put_dev);
+
 	/*
 	 * Default behaviour for in kernel client is to not wait for
 	 * tee-supplicant if not present for any requests in this context.
