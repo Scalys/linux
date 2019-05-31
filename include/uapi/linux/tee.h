@@ -118,6 +118,35 @@ struct tee_ioctl_shm_alloc_data {
 				     struct tee_ioctl_shm_alloc_data)
 
 /**
+ * struct tee_ioctl_shm_register_fd_data - Shared memory registering argument
+ * @fd:		[in] file descriptor identifying the shared memory
+ * @size:	[out] Size of shared memory to allocate
+ * @flags:	[in] Flags to/from allocation.
+ * @id:		[out] Identifier of the shared memory
+ *
+ * The flags field should currently be zero as input. Updated by the call
+ * with actual flags as defined by TEE_IOCTL_SHM_* above.
+ * This structure is used as argument for TEE_IOC_SHM_ALLOC below.
+ */
+struct tee_ioctl_shm_register_fd_data {
+	__s64 fd;
+	__u64 size;
+	__u32 flags;
+	__s32 id;
+} __aligned(8);
+
+/**
+ * TEE_IOC_SHM_REGISTER_FD - register a shared memory from a file descriptor
+ *
+ * Returns a file descriptor on success or < 0 on failure
+ *
+ * The returned file descriptor refers to the shared memory object in kernel
+ * land. The shared memory is freed when the descriptor is closed.
+ */
+#define TEE_IOC_SHM_REGISTER_FD	_IOWR(TEE_IOC_MAGIC, TEE_IOC_BASE + 8, \
+				     struct tee_ioctl_shm_register_fd_data)
+
+/**
  * struct tee_ioctl_buf_data - Variable sized buffer
  * @buf_ptr:	[in] A __user pointer to a buffer
  * @buf_len:	[in] Length of the buffer above
@@ -369,6 +398,59 @@ struct tee_ioctl_shm_register_data {
  */
 #define TEE_IOC_SHM_REGISTER   _IOWR(TEE_IOC_MAGIC, TEE_IOC_BASE + 9, \
 				     struct tee_ioctl_shm_register_data)
+
+/**
+ * struct tee_ioctl_grpc_recv_arg - Receive a request for a generic RPC function
+ * @func:	[in] generic RPC function
+ * @session:	[in] session ID
+ * @num_params	[in/out] number of parameters following this struct
+ *
+ * @num_params is the number of params that host application has room to
+ * receive when input, @num_params is the number of actual params
+ * host application receives when output.
+ */
+struct tee_ioctl_grpc_recv_arg {
+	__u32 func;
+	__u32 session;
+	__u32 num_params;
+	
+	/* num_params tells the actual number of element in params */
+	struct tee_ioctl_param params[];
+};
+
+/**
+ * TEE_IOC_GRPC_RECV - Receive a request for a generic RPC function
+ *
+ * Takes a struct tee_ioctl_buf_data which contains a struct
+ * tee_ioctl_grpc_recv_arg followed by any array of struct tee_param
+ */
+#define TEE_IOC_GRPC_RECV	_IOR(TEE_IOC_MAGIC, TEE_IOC_BASE + 10, \
+				     struct tee_ioctl_buf_data)
+
+/**
+ * struct tee_ioctl_grpc_send_arg - Send a response to a received request
+ * @ret:	[out] return value
+ * @session:	[in] session ID
+ * @num_params	[in] number of parameters following this struct
+ */
+struct tee_ioctl_grpc_send_arg {
+	__u32 ret;
+	__u32 session;
+	__u32 num_params;
+
+	/* num_params tells the actual number of element in params */
+	struct tee_ioctl_param params[];
+};
+
+/**
+ * TEE_IOC_GRPC_SEND - Receive a request for a generic RPC function
+ *
+ * Takes a struct tee_ioctl_buf_data which contains a struct
+ * tee_ioctl_grpc_send_arg followed by any array of struct tee_param
+ */
+#define TEE_IOC_GRPC_SEND	_IOR(TEE_IOC_MAGIC, TEE_IOC_BASE + 11, \
+				     struct tee_ioctl_buf_data)
+
 /*
  * Five syscalls are used when communicating with the TEE driver.
  * open(): opens the device associated with the driver
