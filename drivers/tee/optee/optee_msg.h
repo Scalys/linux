@@ -407,6 +407,8 @@ struct optee_msg_arg {
 #define OPTEE_MSG_RPC_SHM_TYPE_APPL	0
 /* Memory only shared with non-secure kernel */
 #define OPTEE_MSG_RPC_SHM_TYPE_KERNEL	1
+/* Memory shared with the non-secure user space  application that owns the current session */
+#define OPTEE_MSG_RPC_SHM_TYPE_HOST	3
 
 /*
  * Free shared memory previously allocated with OPTEE_MSG_RPC_CMD_SHM_ALLOC
@@ -418,6 +420,8 @@ struct optee_msg_arg {
  *					above
  */
 #define OPTEE_MSG_RPC_CMD_SHM_FREE	7
+
+#define OPTEE_MSG_RPC_CMD_GENERIC   11
 
 /*
  * Access a device on an i2c bus
