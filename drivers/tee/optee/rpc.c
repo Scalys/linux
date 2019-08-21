@@ -214,6 +214,9 @@ static struct tee_shm *cmd_alloc_host(struct tee_context *ctx, size_t sz, struct
 	return shm;
 }
 
+#pragma GCC push_options
+#pragma GCC optimize ("-O0")
+
 static void handle_rpc_func_cmd_shm_alloc(struct tee_context *ctx,
 					  struct optee_msg_arg *arg,
 					  struct optee_call_ctx *call_ctx)
@@ -236,20 +239,8 @@ static void handle_rpc_func_cmd_shm_alloc(struct tee_context *ctx,
 	switch (arg->params[0].u.value.a) {
 	case OPTEE_MSG_RPC_SHM_TYPE_APPL:
 	case OPTEE_MSG_RPC_SHM_TYPE_KERNEL:
-		for (n = 1; n < arg->num_params; n++) {
-			if (arg->params[n].attr != OPTEE_MSG_ATTR_TYPE_NONE) {
-				arg->ret = TEEC_ERROR_BAD_PARAMETERS;
-				return;
-			}
-		}
-		break;
 	case OPTEE_MSG_RPC_SHM_TYPE_HOST:
-		if(arg->params[1].attr != OPTEE_MSG_ATTR_TYPE_VALUE_INPUT) {
-			arg->ret = TEEC_ERROR_BAD_PARAMETERS;
-			return;
-		}
-
-		for (n = 2; n < arg->num_params; n++) {
+		for (n = 1; n < arg->num_params; n++) {
 			if (arg->params[n].attr != OPTEE_MSG_ATTR_TYPE_NONE) {
 				arg->ret = TEEC_ERROR_BAD_PARAMETERS;
 				return;
@@ -268,7 +259,7 @@ static void handle_rpc_func_cmd_shm_alloc(struct tee_context *ctx,
 		break;
 	case OPTEE_MSG_RPC_SHM_TYPE_HOST:
 		mutex_lock(&ctxdata->mutex);
-		sess = optee_find_session(ctxdata, (u32)arg->params[1].u.value.a);
+		sess = optee_find_session(ctxdata, call_ctx->session_id);
 		mutex_unlock(&ctxdata->mutex);
 		if (!sess) {
 			arg->ret = TEEC_ERROR_BAD_PARAMETERS;
@@ -344,6 +335,8 @@ bad:
 	tee_shm_free(shm);
 }
 
+#pragma GCC pop_options
+
 static void cmd_free_suppl(struct tee_context *ctx, struct tee_shm *shm)
 {
 	struct tee_param param;
@@ -384,7 +377,8 @@ static void cmd_free_host(struct tee_shm *shm, struct optee_session *session)
 }
 
 static void handle_rpc_func_cmd_shm_free(struct tee_context *ctx,
-					 struct optee_msg_arg *arg)
+					 struct optee_msg_arg *arg,
+					 struct optee_call_ctx *call_ctx)
 {
 	struct tee_shm *shm;
 	struct optee_context_data *ctxdata = ctx->data;
@@ -402,20 +396,8 @@ static void handle_rpc_func_cmd_shm_free(struct tee_context *ctx,
 	switch (arg->params[0].u.value.a) {
 	case OPTEE_MSG_RPC_SHM_TYPE_APPL:
 	case OPTEE_MSG_RPC_SHM_TYPE_KERNEL:
-		for (n = 1; n < arg->num_params; n++) {
-			if (arg->params[n].attr != OPTEE_MSG_ATTR_TYPE_NONE) {
-				arg->ret = TEEC_ERROR_BAD_PARAMETERS;
-				return;
-			}
-		}
-		break;
 	case OPTEE_MSG_RPC_SHM_TYPE_HOST:
-		if(arg->params[1].attr != OPTEE_MSG_ATTR_TYPE_VALUE_INPUT) {
-			arg->ret = TEEC_ERROR_BAD_PARAMETERS;
-			return;
-		}
-
-		for (n = 2; n < arg->num_params; n++) {
+		for (n = 1; n < arg->num_params; n++) {
 			if (arg->params[n].attr != OPTEE_MSG_ATTR_TYPE_NONE) {
 				arg->ret = TEEC_ERROR_BAD_PARAMETERS;
 				return;
@@ -434,7 +416,7 @@ static void handle_rpc_func_cmd_shm_free(struct tee_context *ctx,
 		break;
 	case OPTEE_MSG_RPC_SHM_TYPE_HOST:
 		mutex_lock(&ctxdata->mutex);
-		sess = optee_find_session(ctxdata, (u32)arg->params[1].u.value.a);
+		sess = optee_find_session(ctxdata, call_ctx->session_id);
 		mutex_unlock(&ctxdata->mutex);
 		if (!sess) {
 			arg->ret = TEEC_ERROR_BAD_PARAMETERS;
@@ -454,7 +436,8 @@ static void handle_rpc_func_cmd_shm_free(struct tee_context *ctx,
 }
 
 static void handle_rpc_func_cmd_generic(struct tee_context *ctx,
-					struct optee_msg_arg *arg)
+					struct optee_msg_arg *arg,
+					struct optee_call_ctx *call_ctx)
 {
 	struct optee_context_data *ctxdata = ctx->data;
 	struct optee_session *sess;
@@ -474,7 +457,7 @@ static void handle_rpc_func_cmd_generic(struct tee_context *ctx,
 	}
 
 	mutex_lock(&ctxdata->mutex);
-	sess = optee_find_session(ctxdata, (u32)arg->params[0].u.value.b);
+	sess = optee_find_session(ctxdata, call_ctx->session_id);
 	mutex_unlock(&ctxdata->mutex);
 	if (!sess) {
 		arg->ret = TEEC_ERROR_BAD_PARAMETERS;
@@ -506,10 +489,8 @@ void optee_rpc_finalize_call(struct optee_call_ctx *call_ctx)
 {
 	free_pages_list(call_ctx);
 }
+
 void handle_rpc_func_cmd(struct tee_context *ctx, struct optee *optee,
-				struct tee_shm *shm,
-				struct optee_call_ctx *call_ctx);
-noinline void handle_rpc_func_cmd(struct tee_context *ctx, struct optee *optee,
 				struct tee_shm *shm,
 				struct optee_call_ctx *call_ctx)
 {
@@ -536,10 +517,10 @@ noinline void handle_rpc_func_cmd(struct tee_context *ctx, struct optee *optee,
 		handle_rpc_func_cmd_shm_alloc(ctx, arg, call_ctx);
 		break;
 	case OPTEE_MSG_RPC_CMD_SHM_FREE:
-		handle_rpc_func_cmd_shm_free(ctx, arg);
+		handle_rpc_func_cmd_shm_free(ctx, arg, call_ctx);
 		break;
 	case OPTEE_MSG_RPC_CMD_GENERIC:
-		handle_rpc_func_cmd_generic(ctx, arg);
+		handle_rpc_func_cmd_generic(ctx, arg, call_ctx);
 		break;
 	default:
 		handle_rpc_supp_cmd(ctx, arg);
