@@ -421,7 +421,7 @@ struct optee_msg_arg {
  */
 #define OPTEE_MSG_RPC_CMD_SHM_FREE	7
 
-#define OPTEE_MSG_RPC_CMD_GENERIC   11
+#define OPTEE_MSG_RPC_CMD_GENERIC  50 
 
 /*
  * Access a device on an i2c bus
