@@ -1,0 +1,277 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device Tree Include file for Freescale Layerscape-1046A family SoC.
+ *
+ * Copyright 2016 Freescale Semiconductor, Inc.
+ * Copyright 2017-2018 NXP
+ *
+ * Mingkai Hu <mingkai.hu@nxp.com>
+ *
+ * Copyright 2020 Scalys
+ *
+ * opensource@scalys.com
+ */
+
+/dts-v1/;
+
+#include "fsl-ls1046a.dtsi"
+
+/ {
+	model = "QLS1046A-4GB dev Board";
+	compatible = "fsl,ls1046a-rdb", "fsl,ls1046a";
+
+	aliases {
+		serial0 = &duart0;
+		serial1 = &duart1;
+		serial2 = &duart2;
+		serial3 = &duart3;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&duart0 {
+	status = "okay";
+};
+
+&duart1 {
+	status = "okay";
+};
+
+&esdhc {
+	disable-wp;
+	cd-gpios = <&gpio3 3 IRQ_TYPE_LEVEL_LOW>;
+	cd-debounce-delay-ms = <10>;
+	cd-inverted;
+	status = "okay";
+	voltage-ranges = <3300 3300>;
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <400000>;
+	
+	adt7476: thermal@2e {
+		compatible = "adi,adt7476";
+		reg = <0x2e>;
+	};
+	
+	ucd9220: powermanager@4e {
+		compatible = "ti,ucd9224";
+		reg = <0x4e>;
+	};
+
+	emc2103: thermal@2d {
+		compatible = "microchip,emc2103";
+		reg = <0x2d>;
+	};
+	
+	eeprom_module@50 {
+		compatible = "microchip,24c1024";
+		reg = <0x50>;
+	};
+	
+	eeprom_carrier@54 {
+		compatible = "microchip,24c1024";
+		reg = <0x54>;
+	};
+	
+	
+	rtc@68 {
+		compatible = "dallas,ds1307";
+		reg = <0x68>;
+	};
+	
+	/* TCA6424 present on module at 0x23 */
+	
+	/* TCA6424 present on carrier at 0x22 */
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&i2c2 {
+	/* I2C switch to PCIe connectors */
+	scl-gpios = <&gpio3 10 0>;
+	status = "okay";
+	
+	tca9546@70 {
+		/* Actual device is a TI TCA9546, but they are functional compatible */
+		compatible = "philips,pca9546";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		
+		i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+		};
+		
+		i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+		};
+		
+		i2c@2 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+		};
+		
+		i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <3>;
+		};
+	};
+};
+
+&i2c3 {
+	/* I2C switch to SFP/SFP+ connectors */
+	status = "okay";
+
+	tca9546@70 {
+		/* Actual device is a TI TCA9546, but they are functional compatible */
+		compatible = "philips,pca9546";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		
+		i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			
+			at24@30 {
+				compatible = "at24,24c01";
+				reg = <0x30>;
+			};
+			sfp@50 {
+				compatible = "optics,sfp";
+				reg = <0x50>;
+			};
+		};
+		
+		i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+			
+			at24@30 {
+				compatible = "at24,24c01";
+				reg = <0x30>;
+			};
+			sfp@50 {
+				compatible = "optics,sfp";
+				reg = <0x50>;
+			};
+		};
+		
+		i2c@2 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+			
+			at24@30 {
+				compatible = "at24,24c01";
+				reg = <0x30>;
+			};
+			sfp@50 {
+				compatible = "optics,sfp";
+				reg = <0x50>;
+			};
+		};
+		
+		i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <3>;
+			clock-frequency = <100000>;
+			
+			at24@30 {
+				compatible = "at24,24c01";
+				reg = <0x30>;
+			};
+			sfp@50 {
+				compatible = "optics,sfp";
+				reg = <0x50>;
+			};
+
+		};
+	};
+};
+
+&ifc {
+	#address-cells = <2>;
+	#size-cells = <1>;
+	ranges = <0x0 0x0 0x0 0x7e800000 0x00010000
+		  0x1 0x0 0x0 0x60000000 0x02000000>;
+	status = "okay";
+	
+	nand@0,0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "fsl,ifc-nand";
+		reg = <0x0 0x0 0x10000>;
+		
+		/* Partitions should be mapped using the mtdparts argument in the bootargs */
+		status = "okay";
+	};
+
+	/*nor@1,0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "cfi-flash";
+		reg = <0x1 0x0 0x2000000>;
+		bank-width = <1>;
+		device-width = <1>;
+		status = "okay";
+	};*/
+};
+
+&qspi {
+	status = "disabled";
+};
+
+&usb0 {
+	maximum-speed = "high-speed";
+	status = "okay";
+};
+
+&usb1 {
+	maximum-speed = "high-speed";
+	status = "okay";
+};
+
+&usb2 {
+	status = "disabled";
+};
+
+#include "fsl-ls1046-post.dtsi"
+
+&fman0 {
+	ethernet@e4000 {
+		phy-handle = <&rgmii_phy1>;
+		phy-connection-type = "rgmii";
+	};
+
+	ethernet@e6000 {
+		phy-handle = <&rgmii_phy2>;
+		phy-connection-type = "rgmii";
+	};
+
+	mdio@fc000 {
+		rgmii_phy1: ethernet-phy@0 {
+			reg = <0x0>;
+		};
+
+		rgmii_phy2: ethernet-phy@1 {
+			reg = <0x1>;
+		};
+	};
+};
