@@ -96,10 +96,20 @@ pcie@3600000 {
 	ethernet@1 {
 		status = "disabled";
 	};
+	ethernet@4 {
+		status = "disabled";
+	};
+	ethernet@5 {
+		status = "disabled";
+	};
+	ethernet@8 {
+		status = "disabled";
+	};
 	ethernet@9 {
 		compatible = "fsl,dpa-ethernet";
 		fsl,fman-mac = <&enet7>;
 		dma-coherent;
+		status = "disabled";
 	};
 };
 
