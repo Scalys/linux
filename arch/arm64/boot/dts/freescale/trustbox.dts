@@ -1,0 +1,166 @@
+/*
+ * Device Tree file for Scalys Trustbox.
+ * 
+ * Copyright 2019 Scalys B.V.
+ *
+ * Copyright 2016 Freescale Semiconductor, Inc.
+ *     
+ *     This library is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License as
+ *     published by the Free Software Foundation; either version 2 of the
+ *     License, or (at your option) any later version.
+ *
+ *     This library is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ */
+/dts-v1/;
+
+#include "fsl-ls1012a.dtsi"
+
+/ {
+	model = "Trustbox";
+	compatible = "fsl,ls1012a";
+
+	aliases {
+		ethernet0 = &pfe_mac0;
+		ethernet1 = &pfe_mac1;
+		serial0 = &duart0;
+	};
+};
+
+&duart0 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&dspi {
+        bus-num = <0>;
+        status = "okay";
+};
+
+&qspi {
+	status = "okay";
+	qflash0: s25fs512s@0 {
+		compatible = "spansion,m25p80";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-max-frequency = <20000000>;
+		m25p,fast-read;
+		reg = <0>;
+		spi-rx-bus-width = <1>;
+		spi-tx-bus-width = <1>;
+	};
+};
+
+&sata {
+	status = "okay";
+};
+
+&gpio0 {
+		ngpios = <32>;
+		gpio-line-names =   "RPI_GPIO1_00", /* UART_TXD */
+							"RPI_GPIO1_01", /* UART_RXD */
+							"RPI_GPIO1_02", /* I2C_SCL */
+							"RPI_GPIO1_03", /* I2C_SDA */
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved",
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved",
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"reserved", 
+							"CPU_IRQ", 
+							"reserved",
+							"RPI_GPIO1_24", /* SPI_MOSI */ 
+							"RPI_GPIO1_25", /* N_SPI_CE0 */
+							"RPI_GPIO1_26", /* N_SPI_CE1 */
+							"RPI_GPIO1_27", /* N_SPI_CE2 */
+							"RPI_GPIO1_28", /* SPI_MISO */
+							"RPI_GPIO1_29", /* SPI_CLK */
+							"reserved", 
+							"reserved";
+};
+
+&gpio1 {
+		ngpios = <18>;
+		gpio-line-names =   "M2_GPIO2_00", 
+							"M2_GPIO2_01", 
+							"M2_GPIO2_02",  
+							"QPSI_A_MUX_SEL", 
+							"RPI_GPIO2_04", 
+							"RPI_GPIO2_05", 
+							"RPI_GPIO2_06", 
+							"RPI_GPIO2_07",
+							"reserved", 
+							"RPI_GPIO2_09", 
+							"RPI_GPIO2_10", 
+							"M2_CFG_1", 
+							"M2_CFG_0", 
+							"M2_CFG_2", 
+							"M2_CFG_3", 
+							"reserved",
+							"reserved", 
+							"TMP_DETECT_N";
+};
+
+&esdhc0 {
+	sd-uhs-sdr104;
+	sd-uhs-sdr50;
+	sd-uhs-sdr25;
+	sd-uhs-sdr12;
+	status = "okay";
+};
+
+&pfe {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	pfe_mac0: ethernet@0 {
+		compatible = "fsl,pfe-gemac-port";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0>;	/* GEM_ID */
+		fsl,gemac-bus-id = <0x0>;	/* BUS_ID */
+		fsl,gemac-phy-id = <0x1>;	/* PHY_ID */
+		fsl,mdio-mux-val = <0x0>;
+		phy-mode = "sgmii";
+		fsl,pfe-phy-if-flags = <0x0>;
+
+		mdio@0 {
+			reg = <0x1>; /* enabled/disabled */
+		};
+	};
+
+	pfe_mac1: ethernet@1 {
+		compatible = "fsl,pfe-gemac-port";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x1>;	/* GEM_ID */
+		fsl,gemac-bus-id = <0x1>;	/* BUS_ID */
+		fsl,gemac-phy-id = <0x2>;	/* PHY_ID */
+		fsl,mdio-mux-val = <0x0>;
+		phy-mode = "sgmii";
+		fsl,pfe-phy-if-flags = <0x0>;
+
+		mdio@0 {
+			reg = <0x0>; /* enabled/disabled */
+		};
+	};
+};
