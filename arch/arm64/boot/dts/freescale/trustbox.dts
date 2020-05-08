@@ -27,7 +27,12 @@
 		ethernet0 = &pfe_mac0;
 		ethernet1 = &pfe_mac1;
 		serial0 = &duart0;
+		usb = &usb0;
 	};
+};
+
+&usb0 {
+	/delete-property/ dma-coherent;
 };
 
 &duart0 {
