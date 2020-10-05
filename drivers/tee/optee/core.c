@@ -285,7 +285,7 @@ static void optee_release(struct tee_context *ctx)
 			memset(arg, 0, sizeof(*arg));
 			arg->cmd = OPTEE_MSG_CMD_CLOSE_SESSION;
 			arg->session = sess->session_id;
-			optee_do_call_with_arg(ctx, parg);
+			optee_do_call_with_arg(ctx, U32_MAX, parg);
 		}
 		kfree(sess);
 	}
@@ -310,6 +310,8 @@ static const struct tee_driver_ops optee_ops = {
 	.cancel_req = optee_cancel_req,
 	.shm_register = optee_shm_register,
 	.shm_unregister = optee_shm_unregister,
+	.grpc_recv = optee_grpc_recv,
+	.grpc_send = optee_grpc_send,
 };
 
 static const struct tee_desc optee_desc = {
