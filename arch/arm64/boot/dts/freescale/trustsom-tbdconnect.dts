@@ -1,0 +1,253 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device Tree file for Scalys TrustSOM TBDConnect Board.
+ *
+ * Copyright 2018-2019 NXP
+ * Copyright 2020 Scalys
+ *
+ * opensource@scalys.com
+ *
+ */
+
+/dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
+#include "fsl-ls1028a.dtsi"
+
+/ {
+       model = "TrustSOM TBDConnect board";
+       compatible = "fsl,ls1028a";
+
+       aliases {
+               crypto = &crypto;
+               serial0 = &duart0;
+               serial1 = &duart1;
+       };
+
+       chosen {
+               stdout-path = "serial0:115200n8";
+       };
+
+       memory@80000000 {
+               device_type = "memory";
+               reg = <0x0 0x80000000 0x1 0x0000000>;
+       };
+
+       /* Fix incorrectly named node such that bootloader can find it */
+       /delete-node/ clock-sysclk;
+       sysclk: sysclk {
+               compatible = "fixed-clock";
+               #clock-cells = <0>;
+               clock-frequency = <100000000>;
+               clock-output-names = "sysclk";
+       };
+
+       leds {
+               compatible = "gpio-leds";
+
+               led0: redled  {
+                       label = "redled";
+                       color = <LED_COLOR_ID_RED>;
+                       gpio = <&gpio3 5 GPIO_ACTIVE_HIGH>; /* GPIO3_5 */
+                       default-state = "off";
+               };
+
+               led1: greenled  {
+                       label = "greenled";
+                       color = <LED_COLOR_ID_GREEN>;
+                       gpio = <&gpio3 3 GPIO_ACTIVE_HIGH>; /* GPIO3_3 */
+                       default-state = "on";
+               };
+
+               led2: blueled  {
+                       label = "blueled";
+                       color = <LED_COLOR_ID_BLUE>;
+                       gpio = <&gpio3 2 GPIO_ACTIVE_HIGH>; /* GPIO3_2 */
+                       default-state = "off";
+               };
+       };
+};
+
+&soc {
+       dspi2: spi@2120000 {
+               compatible = "fsl,ls1028a-dspi", "fsl,ls1021a-v1.0-dspi";
+               #address-cells = <1>;
+               #size-cells = <0>;
+               reg = <0x0 0x2120000 0x0 0x10000>;
+               interrupts = <GIC_SPI 26 IRQ_TYPE_LEVEL_HIGH>;
+               clock-names = "dspi";
+               clocks = <&clockgen 4 1>;
+               spi-num-chipselects = <4>;
+               bus-num = <2>;
+               little-endian;
+               status = "okay";
+       };
+};
+
+&gpio1 {
+       gpio-line-names = "", "", "", "", "", "", "UART_2_SIN", "UART_2_SOUT",
+               "", "", "UART_1_SIN", "UART_1_SOUT", "", "", "", "", "", "", "", "",
+               "", "", "USB_2_DRVVBUS", "USB_2_PWRFAULT", "", "", "", "", "", "",
+               "SDHC_1_WP", "SDHC_1_CD";
+
+       SDHC_1_WP {
+               gpio-hog;
+               gpios = <30 0>;
+               output-low;
+               line-name = "SDHC_1_WP";
+       };
+};
+
+&gpio2 {
+       gpio-line-names = "", "", "", "", "", "", "ASLEEP", "CLKOUT", "", "", "",
+               "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+               "", "", "", "";
+};
+
+&gpio3 {
+       gpio-line-names = "GPIO3_0", "GPIO3_1", "GPIO3_2", "GPIO3_3", "GPIO3_4",
+               "GPIO3_5", "GPIO3_6", "GPIO3_7", "GPIO3_8", "GPIO3_9", "INT_TPM_N",
+               "INT_RTC_N", "ALERT_TEMP", "", "", "", "", "USB_PWRFAULT",
+               "USB_DRVVBUS", "", "", "", "", "", "", "", "", "", "", "", "", "";
+
+       usb_hub_n_reset {
+               gpio-hog;
+               gpios = <7 0>;
+               output-high;
+               line-name = "usb_hub_n_reset";
+       };
+
+       w_disable {
+               gpio-hog;
+               gpios = <9 0>;
+               output-high;
+               line-name = "GPIO3_9";
+       };
+};
+
+&dspi2 {
+       spi-num-chipselects = <1>;
+       status = "okay";
+
+       slb9670: slb9670@0 {
+               compatible = "infineon,slb9670", "tis,tpm2-spi";
+               reg = <0>; /* CE0 */
+               #address-cells = <1>;
+               #size-cells = <0>;
+               spi-max-frequency = <10000000>;
+               status = "okay";
+       };
+};
+
+&esdhc {
+       sd-uhs-sdr104;
+       sd-uhs-sdr50;
+       sd-uhs-sdr25;
+       sd-uhs-sdr12;
+       status = "okay";
+       cd-gpios = <&gpio1 31 GPIO_ACTIVE_LOW>;
+       disable-wp;
+};
+
+&esdhc1 {
+       voltage-ranges = <1800 1800>;
+       mmc-hs200-1_8v;
+       /*mmc-hs400-1_8v;
+       max-frequency = <150000000>;*/
+       bus-width = <8>;
+       non-removable;
+       status = "okay";
+};
+
+&usb0 {
+       dr_mode = "peripheral";
+       maximum-speed = "super-speed";
+       usb-role-switch = "true";
+       status = "okay";
+
+       usb_con: connector {
+               compatible = "usb-c-connector";
+               label = "USB-C";
+               power-role = "sink";
+               data-role = "dual";
+       };
+};
+
+&usb1 {
+       dr_mode = "host";
+       maximum-speed = "high-speed";
+       status = "okay";
+};
+
+&i2c0 {
+       status = "okay";
+
+    rtc@51 {
+        compatible = "nxp,pcf85063tp";
+        reg = <0x51>;
+    };
+
+    tmp@48 {
+        compatible = "tmp101";
+        reg = <0x48>;
+    };
+};
+
+&i2c3 {
+       status = "disabled";
+};
+
+&i2c5 {
+       status = "disabled";
+};
+
+&can1 {
+       status = "disabled";
+};
+
+&fspi {
+       status = "disabled";
+};
+
+&duart0 {
+       status = "okay";
+};
+
+&duart1 {
+       status = "disabled";
+};
+
+&enetc_port0 {
+    status = "okay";
+       phy-handle = <&sgmii_phy0>;
+       phy-connection-type = "sgmii";
+
+       mdio {
+               #address-cells = <1>;
+               #size-cells = <0>;
+               sgmii_phy0: ethernet-phy@1 {
+                       reg = <0x1>;
+               };
+       };
+};
+
+&enetc_port1 {
+       status = "disabled";
+};
+
+&enetc_port2 {
+       status = "disabled";
+};
+
+&enetc_port3 {
+       status = "disabled";
+};
+
+&enetc_mdio_pf3 {
+       status = "disabled";
+};
+
+&hdptx0 {
+       status = "disabled";
+};
+
