@@ -3,7 +3,7 @@
  * Device Tree file for Scalys TrustSOM TBDConnect Board.
  *
  * Copyright 2018-2019 NXP
- * Copyright 2020 Scalys
+ * Copyright 2021 Scalys
  *
  * opensource@scalys.com
  *
@@ -68,22 +68,6 @@
        };
 };
 
-&soc {
-       dspi2: spi@2120000 {
-               compatible = "fsl,ls1028a-dspi", "fsl,ls1021a-v1.0-dspi";
-               #address-cells = <1>;
-               #size-cells = <0>;
-               reg = <0x0 0x2120000 0x0 0x10000>;
-               interrupts = <GIC_SPI 26 IRQ_TYPE_LEVEL_HIGH>;
-               clock-names = "dspi";
-               clocks = <&clockgen 4 1>;
-               spi-num-chipselects = <4>;
-               bus-num = <2>;
-               little-endian;
-               status = "okay";
-       };
-};
-
 &gpio1 {
        gpio-line-names = "", "", "", "", "", "", "UART_2_SIN", "UART_2_SOUT",
                "", "", "UART_1_SIN", "UART_1_SOUT", "", "", "", "", "", "", "", "",
@@ -127,15 +111,20 @@
 
 &dspi2 {
        spi-num-chipselects = <1>;
+       bus-num = <2>;
        status = "okay";
 
        slb9670: slb9670@0 {
-               compatible = "infineon,slb9670", "tis,tpm2-spi";
+               compatible = "infineon,slb9670";
                reg = <0>; /* CE0 */
                #address-cells = <1>;
                #size-cells = <0>;
                spi-max-frequency = <10000000>;
                status = "okay";
+               /* Interrupt disabled for now */
+               /*interrupt-parent = <&gpio3>;
+               interrupts = <10 IRQ_TYPE_EDGE_FALLING>;
+               interrupt-names = "INT_TPM_N";*/
        };
 };
 
@@ -185,11 +174,17 @@
     rtc@51 {
         compatible = "nxp,pcf85063tp";
         reg = <0x51>;
+        interrupt-parent = <&gpio3>;
+        interrupts = <11 IRQ_TYPE_EDGE_FALLING>;
+        interrupt-names = "INT_RTC_N";
     };
 
     tmp@48 {
-        compatible = "tmp101";
+        compatible = "ti,tmp101";
         reg = <0x48>;
+        interrupt-parent = <&gpio3>;
+        interrupts = <12 IRQ_TYPE_EDGE_FALLING>;
+        interrupt-names = "ALERT_TEMP";
     };
 };
 
