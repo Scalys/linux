@@ -104,7 +104,7 @@
        w_disable {
                gpio-hog;
                gpios = <9 0>;
-               output-high;
+               output-low;
                line-name = "GPIO3_9";
        };
 };
@@ -150,7 +150,7 @@
 
 &usb0 {
        dr_mode = "peripheral";
-       maximum-speed = "super-speed";
+       maximum-speed = "super-speed"; /* Use high-speed for rndis */
        usb-role-switch = "true";
        status = "okay";
 
