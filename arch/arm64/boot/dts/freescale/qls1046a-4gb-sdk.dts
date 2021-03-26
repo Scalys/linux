@@ -45,7 +45,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  *
  *
- * Copyright 2020 Scalys
+ * Copyright 2021 Scalys
  *
  * opensource@scalys.com
  *
@@ -94,12 +94,6 @@ pcie@3600000 {
 		status = "disabled";
 	};
 	ethernet@1 {
-		status = "disabled";
-	};
-	ethernet@4 {
-		status = "disabled";
-	};
-	ethernet@5 {
 		status = "disabled";
 	};
 	ethernet@8 {
