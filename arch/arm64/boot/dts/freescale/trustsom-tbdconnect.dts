@@ -15,234 +15,288 @@
 #include "fsl-ls1028a.dtsi"
 
 / {
-       model = "TrustSOM TBDConnect board";
-       compatible = "fsl,ls1028a";
+	model = "TrustSOM TBDConnect board";
+	compatible = "fsl,ls1028a";
 
-       aliases {
-               crypto = &crypto;
-               serial0 = &duart0;
-               serial1 = &duart1;
-       };
+	aliases {
+		crypto = &crypto;
+		serial0 = &duart0;
+		serial1 = &duart1;
+	};
 
-       chosen {
-               stdout-path = "serial0:115200n8";
-       };
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
 
-       memory@80000000 {
-               device_type = "memory";
-               reg = <0x0 0x80000000 0x1 0x0000000>;
-       };
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x0 0x80000000 0x1 0x0000000>;
+	};
 
-       /* Fix incorrectly named node such that bootloader can find it */
-       /delete-node/ clock-sysclk;
-       sysclk: sysclk {
-               compatible = "fixed-clock";
-               #clock-cells = <0>;
-               clock-frequency = <100000000>;
-               clock-output-names = "sysclk";
-       };
+	/* Fix incorrectly named node such that bootloader can find it */
+	/delete-node/ clock-sysclk;
+	sysclk: sysclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+		clock-output-names = "sysclk";
+	};
 
-       leds {
-               compatible = "gpio-leds";
+	leds {
+		compatible = "gpio-leds";
 
-               led0: redled  {
-                       label = "redled";
-                       color = <LED_COLOR_ID_RED>;
-                       gpio = <&gpio3 5 GPIO_ACTIVE_HIGH>; /* GPIO3_5 */
-                       default-state = "off";
-               };
+		led0: redled  {
+			label = "redled";
+			color = <LED_COLOR_ID_RED>;
+			gpio = <&gpio3 5 GPIO_ACTIVE_HIGH>; /* GPIO3_5 */
+			default-state = "off";
+		};
 
-               led1: greenled  {
-                       label = "greenled";
-                       color = <LED_COLOR_ID_GREEN>;
-                       gpio = <&gpio3 3 GPIO_ACTIVE_HIGH>; /* GPIO3_3 */
-                       default-state = "on";
-               };
+		led1: greenled  {
+			label = "greenled";
+			color = <LED_COLOR_ID_GREEN>;
+			gpio = <&gpio3 3 GPIO_ACTIVE_HIGH>; /* GPIO3_3 */
+			default-state = "on";
+		};
 
-               led2: blueled  {
-                       label = "blueled";
-                       color = <LED_COLOR_ID_BLUE>;
-                       gpio = <&gpio3 2 GPIO_ACTIVE_HIGH>; /* GPIO3_2 */
-                       default-state = "off";
-               };
-       };
+		 led2: blueled  {
+			label = "blueled";
+			color = <LED_COLOR_ID_BLUE>;
+			gpio = <&gpio3 2 GPIO_ACTIVE_HIGH>; /* GPIO3_2 */
+			default-state = "off";
+		};
+	};
 };
 
 &gpio1 {
-       gpio-line-names = "", "", "", "", "", "", "UART_2_SIN", "UART_2_SOUT",
-               "", "", "UART_1_SIN", "UART_1_SOUT", "", "", "", "", "", "", "", "",
-               "", "", "USB_2_DRVVBUS", "USB_2_PWRFAULT", "", "", "", "", "", "",
-               "SDHC_1_WP", "SDHC_1_CD";
+	gpio-line-names = "", "", "", "", "", "", "UART_2_SIN", "UART_2_SOUT",
+		"", "", "UART_1_SIN", "UART_1_SOUT", "", "", "", "", "", "", "", "",
+		"", "", "USB_2_DRVVBUS", "USB_2_PWRFAULT", "", "", "", "", "", "",
+		"SDHC_1_WP", "SDHC_1_CD";
 
-       SDHC_1_WP {
-               gpio-hog;
-               gpios = <30 0>;
-               output-low;
-               line-name = "SDHC_1_WP";
-       };
+	SDHC_1_WP {
+		gpio-hog;
+		gpios = <30 0>;
+		output-low;
+		line-name = "SDHC_1_WP";
+	};
+
+	gpio1_default_output_low {
+		gpio-hog;
+		gpios = <6 0>, <7 0>, <22 0>, <23 0>, <26 0>, <27 0>;
+		output-low;
+		line-name = "gpio1_default_output_low";
+	};
 };
 
 &gpio2 {
-       gpio-line-names = "", "", "", "", "", "", "ASLEEP", "CLKOUT", "", "", "",
-               "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-               "", "", "", "";
+	gpio-line-names = "", "", "", "", "", "", "ASLEEP", "CLKOUT", "", "", "",
+		"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+		"", "", "", "";
+
+	gpio2_default_output_low {
+		gpio-hog;
+		gpios = <7 0>, <20 0>, <21 0>, <22 0>, <23 0>, <24 0>, <25 0>,
+			<26 0>, <27 0>, <28 0>, <29 0>, <30 0>, <31 0>;
+		output-low;
+		line-name = "gpio2_default_output_low";
+	};
 };
 
 &gpio3 {
-       gpio-line-names = "GPIO3_0", "GPIO3_1", "GPIO3_2", "GPIO3_3", "GPIO3_4",
-               "GPIO3_5", "GPIO3_6", "GPIO3_7", "GPIO3_8", "GPIO3_9", "INT_TPM_N",
-               "INT_RTC_N", "ALERT_TEMP", "", "", "", "", "USB_PWRFAULT",
-               "USB_DRVVBUS", "", "", "", "", "", "", "", "", "", "", "", "", "";
+	gpio-line-names = "GPIO3_0", "GPIO3_1", "GPIO3_2", "GPIO3_3", "GPIO3_4",
+		"GPIO3_5", "GPIO3_6", "GPIO3_7", "GPIO3_8", "GPIO3_9", "INT_TPM_N",
+		"INT_RTC_N", "ALERT_TEMP", "", "", "", "", "USB_PWRFAULT",
+		"USB_DRVVBUS", "", "", "", "", "", "", "", "", "", "", "", "", "";
 
-       usb_hub_n_reset {
-               gpio-hog;
-               gpios = <7 0>;
-               output-high;
-               line-name = "usb_hub_n_reset";
-       };
+	USB_HUB_N_RESET {
+		gpio-hog;
+		gpios = <7 0>;
+		output-high;
+		line-name = "USB_HUB_N_RESET";
+	};
 
-       w_disable {
-               gpio-hog;
-               gpios = <9 0>;
-               output-low;
-               line-name = "GPIO3_9";
-       };
+	W_DISABLE {
+		gpio-hog;
+		gpios = <9 0>;
+		output-low;
+		line-name = "W_DISABLE";
+	};
+
+	INT_TPM_N {
+		gpio-hog;
+		gpios = <10 0>;
+		input;
+		line-name = "INT_TPM_N";
+	};
+
+	INT_RTC_N {
+		gpio-hog;
+		gpios = <11 0>;
+		input;
+		line-name = "INT_RTC_N";
+	};
+
+	ALERT_TEMP {
+		gpio-hog;
+		gpios = <12 0>;
+		input;
+		line-name = "ALERT_TEMP";
+	};
+
+	USB_N_ALERT_STUSB {
+		gpio-hog;
+		gpios = <1 0>;
+		input;
+		line-name = "USB_N_ALERT_STUSB";
+	};
+
+	gpio3_default_output_low {
+		gpio-hog;
+		gpios = <0 0>, <4 0>, <6 0>, <8 0>, <17 0>, <18 0>;
+		output-low;
+		line-name = "gpio3_default_output_low";
+	};
 };
 
 &dspi2 {
-       spi-num-chipselects = <1>;
-       bus-num = <2>;
-       status = "okay";
+	spi-num-chipselects = <1>;
+	bus-num = <2>;
+	status = "okay";
 
-       slb9670: slb9670@0 {
-               compatible = "infineon,slb9670";
-               reg = <0>; /* CE0 */
-               #address-cells = <1>;
-               #size-cells = <0>;
-               spi-max-frequency = <10000000>;
-               status = "okay";
-               /* Interrupt disabled for now */
-               /*interrupt-parent = <&gpio3>;
-               interrupts = <10 IRQ_TYPE_EDGE_FALLING>;
-               interrupt-names = "INT_TPM_N";*/
-       };
+	slb9670: slb9670@0 {
+		compatible = "infineon,slb9670";
+		reg = <0>; /* CE0 */
+		#address-cells = <1>;
+		#size-cells = <0>;
+		spi-max-frequency = <10000000>;
+		status = "okay";
+		/* Interrupt disabled for now */
+		/*interrupt-parent = <&gpio3>;
+		interrupts = <10 IRQ_TYPE_EDGE_FALLING>;
+		interrupt-names = "INT_TPM_N";*/
+	};
 };
 
 &esdhc {
-       sd-uhs-sdr104;
-       sd-uhs-sdr50;
-       sd-uhs-sdr25;
-       sd-uhs-sdr12;
-       status = "okay";
-       cd-gpios = <&gpio1 31 GPIO_ACTIVE_LOW>;
-       disable-wp;
+	sd-uhs-sdr104;
+	sd-uhs-sdr50;
+	sd-uhs-sdr25;
+	sd-uhs-sdr12;
+	status = "okay";
+	cd-gpios = <&gpio1 31 GPIO_ACTIVE_LOW>;
+	disable-wp;
 };
 
 &esdhc1 {
-       voltage-ranges = <1800 1800>;
-       mmc-hs200-1_8v;
-       /*mmc-hs400-1_8v;
-       max-frequency = <150000000>;*/
-       bus-width = <8>;
-       non-removable;
-       status = "okay";
+	voltage-ranges = <1800 1800>;
+	mmc-hs200-1_8v;
+	/*mmc-hs400-1_8v;
+	max-frequency = <150000000>;*/
+	bus-width = <8>;
+	non-removable;
+	status = "okay";
 };
 
 &usb0 {
-       dr_mode = "peripheral";
-       maximum-speed = "super-speed"; /* Use high-speed for rndis */
-       usb-role-switch = "true";
-       status = "okay";
+	dr_mode = "peripheral";
+	maximum-speed = "super-speed"; /* Use high-speed for rndis */
+	usb-role-switch = "true";
+	status = "okay";
 
-       usb_con: connector {
-               compatible = "usb-c-connector";
-               label = "USB-C";
-               power-role = "sink";
-               data-role = "dual";
-       };
+	usb_con: connector {
+		compatible = "usb-c-connector";
+		label = "USB-C";
+		power-role = "sink";
+		data-role = "dual";
+	};
 };
 
 &usb1 {
-       dr_mode = "host";
-       maximum-speed = "high-speed";
-       status = "okay";
+	dr_mode = "host";
+	maximum-speed = "high-speed";
+	status = "okay";
 };
 
 &i2c0 {
-       status = "okay";
+	status = "okay";
 
-    rtc@51 {
-        compatible = "nxp,pcf85063tp";
-        reg = <0x51>;
-        interrupt-parent = <&gpio3>;
-        interrupts = <11 IRQ_TYPE_EDGE_FALLING>;
-        interrupt-names = "INT_RTC_N";
-    };
+	rtc@51 {
+		compatible = "nxp,pcf85063tp";
+		reg = <0x51>;
+		interrupt-parent = <&gpio3>;
+		interrupts = <11 IRQ_TYPE_EDGE_FALLING>;
+		interrupt-names = "INT_RTC_N";
+	};
 
-    tmp@48 {
-        compatible = "ti,tmp101";
-        reg = <0x48>;
-        interrupt-parent = <&gpio3>;
-        interrupts = <12 IRQ_TYPE_EDGE_FALLING>;
-        interrupt-names = "ALERT_TEMP";
-    };
+	tmp@48 {
+		compatible = "ti,tmp101";
+		reg = <0x48>;
+		interrupt-parent = <&gpio3>;
+		interrupts = <12 IRQ_TYPE_EDGE_FALLING>;
+		interrupt-names = "ALERT_TEMP";
+	};
 };
 
 &i2c3 {
-       status = "disabled";
+	status = "disabled";
 };
 
 &i2c5 {
-       status = "disabled";
+	status = "disabled";
 };
 
 &can1 {
-       status = "disabled";
+	status = "disabled";
 };
 
 &fspi {
-       status = "disabled";
+	status = "disabled";
 };
 
 &duart0 {
-       status = "okay";
+	status = "okay";
 };
 
 &duart1 {
-       status = "disabled";
+	status = "disabled";
 };
 
 &enetc_port0 {
-    status = "okay";
-       phy-handle = <&sgmii_phy0>;
-       phy-connection-type = "sgmii";
+	status = "okay";
+	phy-handle = <&sgmii_phy0>;
+	phy-connection-type = "sgmii";
 
-       mdio {
-               #address-cells = <1>;
-               #size-cells = <0>;
-               sgmii_phy0: ethernet-phy@1 {
-                       reg = <0x1>;
-               };
-       };
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		sgmii_phy0: ethernet-phy@1 {
+			reg = <0x1>;
+		};
+	};
 };
 
 &enetc_port1 {
-       status = "disabled";
+	status = "disabled";
 };
 
 &enetc_port2 {
-       status = "disabled";
+	status = "disabled";
 };
 
 &enetc_port3 {
-       status = "disabled";
+	status = "disabled";
 };
 
 &enetc_mdio_pf3 {
-       status = "disabled";
+	status = "disabled";
+};
+
+&malidp0 {
+	status = "disabled";
 };
 
 &hdptx0 {
-       status = "disabled";
+	status = "disabled";
 };
 
