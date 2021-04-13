@@ -166,12 +166,25 @@
 			reg = <0x1>;
 			compatible = "ethernet-phy-ieee802.3-c22";
 			ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+			ti,led-function = <(DP83867_LED0(FUNC_LINK_ACT) |
+					    DP83867_LED1(FUNC_LINK))>;
+			ti,led-ctrl = <(DP83867_LED0(CTRL_ACTIVE_HIGH) |
+					DP83867_LED1(CTRL_ACTIVE_HIGH) |
+					DP83867_LED2(CTRL_FORCE_LOW) |
+					DP83867_LED3(CTRL_FORCE_LOW))>;
+
 		};
 
 		sgmii_phy2: ethernet-phy@2 {
 			reg = <0x2>;
 			compatible = "ethernet-phy-ieee802.3-c22";
 			ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+			ti,led-function = <(DP83867_LED0(FUNC_LINK_ACT) |
+					    DP83867_LED1(FUNC_LINK))>;
+			ti,led-ctrl = <(DP83867_LED0(CTRL_ACTIVE_HIGH) |
+					DP83867_LED1(CTRL_ACTIVE_HIGH) |
+					DP83867_LED2(CTRL_FORCE_LOW) |
+					DP83867_LED3(CTRL_FORCE_LOW))>;
 		};
 	};
 };
