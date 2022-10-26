@@ -21,6 +21,14 @@
 	compatible = "fsl,ls1046a";
 
 	aliases {
+        ethernet0 = &enet2;
+		ethernet1 = &enet3;
+		ethernet2 = &enet4;
+		ethernet3 = &enet5;
+		ethernet4 = &enet6;
+		ethernet5 = &enet7;
+		ethernet6 = &enet0;
+		ethernet7 = &enet1;
 		serial0 = &duart0;
 		serial1 = &duart1;
 		serial2 = &duart2;
@@ -255,6 +263,13 @@
 #include "fsl-ls1046-post.dtsi"
 
 &fman0 {
+	ethernet@e0000 {
+		status = "disabled";
+	};
+	
+	ethernet@e2000 {
+		status = "disabled";
+	};
 	ethernet@e4000 {
 		phy-handle = <&rgmii_phy1>;
 		phy-connection-type = "rgmii";
@@ -284,11 +299,19 @@
 	};
 
 	ethernet@f0000 { /* 10GEC1 */
-		status = "disabled";
+		phy-connection-type = "xgmii";
+		fixed-link {
+			speed = <10000>;
+			full-duplex;
+		};
 	};
 
 	ethernet@f2000 { /* 10GEC2 */
-		status = "disabled";
+		phy-connection-type = "xgmii";
+		fixed-link {
+			speed = <10000>;
+			full-duplex;
+		};
 	};
 
 	mdio@fc000 {

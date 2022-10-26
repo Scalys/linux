@@ -51,7 +51,7 @@
  *
  */
 
-#include "qls1046a-4gb.dts"
+#include "qls1046a-4gb-xfi.dts"
 #include "qoriq-qman-portals-sdk.dtsi"
 #include "qoriq-bman-portals-sdk.dtsi"
 
@@ -97,13 +97,13 @@ pcie@3600000 {
 		status = "disabled";
 	};
 	ethernet@8 {
-		status = "disabled";
+		status = "okay";
 	};
 	ethernet@9 {
 		compatible = "fsl,dpa-ethernet";
 		fsl,fman-mac = <&enet7>;
 		dma-coherent;
-		status = "disabled";
+		status = "okay";
 	};
 };
 
